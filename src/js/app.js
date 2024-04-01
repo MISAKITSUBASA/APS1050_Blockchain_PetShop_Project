@@ -89,7 +89,7 @@ App = {
           breed: petData[1],
           age: petData[2],
           location: petData[3],
-          photo: petData[4],
+          picture: petData[4],
           owner: petData[5]
         };
       }
