@@ -1,76 +1,128 @@
 App = {
   web3Provider: null,
   contracts: {},
+  petCount: 0,
+  pets: {},
 
-  init: async function () {
-    // Load pets.
-    $.getJSON('../pets.json', function (data) {
-      var petsRow = $('#petsRow');
-      var petTemplate = $('#petTemplate');
+  init: async function() {
+    try {
+      // Initialize web3 and set up the contract instances
+      await App.initWeb3();
+      await App.initContract();
 
-      for (i = 0; i < data.length; i++) {
-        petTemplate.find('.panel-title').text(data[i].name);
-        petTemplate.find('img').attr('src', data[i].picture);
-        petTemplate.find('.pet-breed').text(data[i].breed);
-        petTemplate.find('.pet-age').text(data[i].age);
-        petTemplate.find('.pet-location').text(data[i].location);
-        petTemplate.find('.btn-adopt').attr('data-id', data[i].id);
-        petTemplate.find('.btn-unadopt').attr('data-id', data[i].id);
-
-        petsRow.append(petTemplate.html());
-      }
-    });
-
-    return await App.initWeb3();
+      // After ensuring the contract is initialized, fetch and display pets
+      await App.fetchAndDisplayPets();
+    } catch(error) {
+      console.error("Could not initialize the app:", error);
+    }
   },
 
-  initWeb3: async function () {
-
-    // Modern dapp browsers...
+  initWeb3: async function() {
+    // Initialize web3 and set up the provider
     if (window.ethereum) {
       App.web3Provider = window.ethereum;
       try {
         // Request account access
         await window.ethereum.enable();
       } catch (error) {
-        // User denied account access...
-        console.error("User denied account access")
+        console.error("User denied account access");
+        throw new Error("User denied account access");
       }
-    }
-    // Legacy dapp browsers...
-    else if (window.web3) {
+    } else if (window.web3) {
       App.web3Provider = window.web3.currentProvider;
-    }
-    // If no injected web3 instance is detected, fall back to Ganache
-    else {
+    } else {
       App.web3Provider = new Web3.providers.HttpProvider('http://localhost:7545');
     }
     web3 = new Web3(App.web3Provider);
-
-    return App.initContract();
   },
 
-  initContract: function () {
-    $.getJSON('Adoption.json', function (data) {
-      // Get the necessary contract artifact file and instantiate it with truffle-contract
-      var AdoptionArtifact = data;
+  initContract: async function() {
+    try {
+      // Use fetch API or another promise-based method to ensure this is awaited
+      const response = await fetch('Adoption.json');
+      const AdoptionArtifact = await response.json();
+  
       App.contracts.Adoption = TruffleContract(AdoptionArtifact);
-
-      // Set the provider for our contract
       App.contracts.Adoption.setProvider(App.web3Provider);
-
-      // Use our contract to retrieve and mark the adopted pets
-      return App.markAdopted();
-    });
-
-
+  
+      // Await for the contract to be initialized here, if necessary
+      await App.markAdopted(); // Make sure this function properly handles async operations
+    } catch (error) {
+      console.error("Failed to fetch Adoption.json", error);
+      throw new Error("Failed to initialize the contract.");
+    }
     return App.bindEvents();
   },
 
-  bindEvents: function () {
+  bindEvents: function() {
     $(document).on('click', '.btn-adopt', App.handleAdopt);
     $(document).on('click', '.btn-unadopt', App.handleUnadopt);
-    // $(document).on('submit', '#petRegistrationForm', App.handleRegisterPet);
+    $(document).on('submit', '#petRegistrationForm', App.handleRegisterPet);
+  },
+
+  fetchAndDisplayPets: async function() {
+    const blockchainPets = await App.fetchPetsFromBlockchain();
+    const jsonPets = await App.fetchPetsFromJSON();
+
+    // Combine and render pets data
+    App.pets = {...jsonPets, ...blockchainPets}; // Adjust this merge logic based on your data structure
+    App.renderPets();
+  },
+
+  fetchPetsFromBlockchain: async function() {
+    // Fetch pets from the blockchain
+    var adoptionInstance;
+
+    const pets = {};
+    try {
+      adoptionInstance = await App.contracts.Adoption.deployed();
+      const petIds = await adoptionInstance.getPetIds();
+      console.log(petIds, "petIds")
+      for (let i = 0; i < petIds.length; i++) {
+        
+        const petId = petIds[i]["c"][0];
+        console.log(petId[i], "petId")
+        const petData = await adoptionInstance.getPet(petId);
+        pets[petId] = {
+          name: petData[0],
+          breed: petData[1],
+          age: petData[2],
+          location: petData[3],
+          photo: petData[4],
+          owner: petData[5]
+        };
+      }
+      console.log(pets, "pets from blockchain");
+    } catch (error) {
+      console.error("Could not fetch pets from blockchain:", error);
+    }
+    return pets;
+  },
+
+  fetchPetsFromJSON: function() {
+    return new Promise((resolve, reject) => {
+      $.getJSON('../pets.json', function(data) {
+        resolve(data);
+      }).fail(reject);
+    });
+  },
+
+  renderPets: function() {
+    var petsRow = $('#petsRow');
+    var petTemplate = $('#petTemplate');
+
+    for (let id in App.pets) {
+      let pet = App.pets[id];
+      petTemplate.find('.panel-title').text(pet.name);
+      petTemplate.find('img').attr('src', pet.picture);
+      petTemplate.find('.pet-breed').text(pet.breed);
+      petTemplate.find('.pet-age').text(pet.age);
+      petTemplate.find('.pet-location').text(pet.location);
+      petTemplate.find('.btn-adopt').attr('data-id', pet.id);
+      petTemplate.find('.btn-unadopt').attr('data-id', pet.id);
+
+      petsRow.append(petTemplate.html());
+    }
   },
 
   markAdopted: function (adopters, account) {
@@ -134,7 +186,8 @@ App = {
         adoptionInstance = instance;
 
         // Execute adopt as a transaction by sending account
-        return adoptionInstance.adopt(petId, { from: account });
+        // return adoptionInstance.adopt(petId, { from: account });
+        return adoptionInstance.adopt(petId, App.pets[petId].name, App.pets[petId].breed, App.pets[petId].age, App.pets[petId].location, App.pets[petId].picture, { from: account });
       }).then(function (result) {
         return App.markAdopted();
       }).catch(function (err) {
@@ -174,7 +227,8 @@ App = {
 
     });
   },
-  handleRegisterPet: function(event){
+
+  handleRegisterPet: function (event) {
 
     console.log("Form submission triggered");
 
@@ -182,34 +236,43 @@ App = {
     // get value from the form
     var petName = $('#petName').val();
     var petBreed = $('#petBreed').val();
-    var petAge = $('#petAge').val();
-    var petLocation = $('#petLocation').val();
-    var petPhoto = $('#petPhoto').val();
 
-    web3.eth.getAccounts(function (error, account){
-      if (error){
+    var petAge = parseInt($('#petAge').val(), 10);
+
+    var petLocation = $('#petLocation').val();
+    var petPhoto = 'images/' + $('#petPhoto').val().split('\\').pop();
+    console.log(petPhoto, "petPhoto")
+    // console log the type of these values to make sure they are correct
+    console.log(typeof petName, typeof petBreed, typeof petAge, typeof petLocation, typeof petPhoto, "petName, petBreed, petAge, petLocation, petPhoto")
+
+
+    web3.eth.getAccounts(function (error, account) {
+      if (error) {
         console.log(error);
       }
 
-      var account = account[0]; 
-      
-      App.contracts.Adoption.deployed().then(function (instance){
-        PetRegistrationInstance = instance;
+      var account = account[0];
 
-        return PetRegistrationInstance.registerPet(petName, petBreed, petAge, petLocation, petPhoto, {from: account});
-      }).then(function(result) {
+      App.contracts.Adoption.deployed().then(function (instance) {
+        PetRegistrationInstance = instance;
+        console.log(petName, petBreed, petAge, petLocation, petPhoto, "petName, petBreed, petAge, petLocation, petPhoto")
+        console.log(App.pets.length, "App.pets.length")
+        var numberOfPets = Object.keys(App.pets).length;
+        PetRegistrationInstance.registerPet(numberOfPets, petName, petBreed, petAge, petLocation, petPhoto, { from: account });
+        App.pets[numberOfPets] = { id: numberOfPets, name: petName, breed: petBreed, age: petAge, location: petLocation, picture: petPhoto };
+        console.log(App.pets, "App.pets after adding new pet")
+      }).then(function (result) {
         console.log('Pet registered successfully', result);
-      }).catch(function (error){
+      }).catch(function (error) {
         console.log(error.message);
       });
     });
 
   }
-
 };
 
-$(function () {
-  $(window).on("load",function () {
+$(function() {
+  $(window).on('load', function() {
     App.init();
-  });
+});
 });
