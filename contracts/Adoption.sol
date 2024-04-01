@@ -120,6 +120,25 @@ contract Adoption {
 
         return petId;
     }
-
+    // Get the most adopted breed
+    function getMostAdoptedBreed() public view returns (string memory) {
+        uint[] memory breedCount = new uint[](petIds.length);
+        uint maxCount = 0;
+        uint maxIndex = 0;
+        for (uint i = 0; i < petIds.length; i++) {
+            if (pets[petIds[i]].owner != address(0)) { // Check if the pet is owned by someone
+                for (uint j = 0; j < petIds.length; j++) {
+                    if (keccak256(abi.encodePacked(pets[petIds[i]].breed)) == keccak256(abi.encodePacked(pets[petIds[j]].breed))) {
+                        breedCount[i]++;
+                    }
+                }
+                if (breedCount[i] > maxCount) {
+                    maxCount = breedCount[i];
+                    maxIndex = i;
+                }
+            }
+        }
+        return pets[petIds[maxIndex]].breed;
+    }
 
 }

@@ -4,7 +4,7 @@ App = {
   petCount: 0,
   pets: {},
 
-  init: async function() {
+  init: async function () {
     try {
       // Initialize web3 and set up the contract instances
       await App.initWeb3();
@@ -12,12 +12,12 @@ App = {
 
       // After ensuring the contract is initialized, fetch and display pets
       await App.fetchAndDisplayPets();
-    } catch(error) {
+    } catch (error) {
       console.error("Could not initialize the app:", error);
     }
   },
 
-  initWeb3: async function() {
+  initWeb3: async function () {
     // Initialize web3 and set up the provider
     if (window.ethereum) {
       App.web3Provider = window.ethereum;
@@ -36,15 +36,15 @@ App = {
     web3 = new Web3(App.web3Provider);
   },
 
-  initContract: async function() {
+  initContract: async function () {
     try {
       // Use fetch API or another promise-based method to ensure this is awaited
       const response = await fetch('Adoption.json');
       const AdoptionArtifact = await response.json();
-  
+
       App.contracts.Adoption = TruffleContract(AdoptionArtifact);
       App.contracts.Adoption.setProvider(App.web3Provider);
-  
+
       // Await for the contract to be initialized here, if necessary
       await App.markAdopted(); // Make sure this function properly handles async operations
     } catch (error) {
@@ -54,22 +54,23 @@ App = {
     return App.bindEvents();
   },
 
-  bindEvents: function() {
+  bindEvents: function () {
     $(document).on('click', '.btn-adopt', App.handleAdopt);
     $(document).on('click', '.btn-unadopt', App.handleUnadopt);
     $(document).on('submit', '#petRegistrationForm', App.handleRegisterPet);
+    $(document).on('click', '.btn-mostAdoptedBreed', App.handleMostAdoptedBreed);
   },
 
-  fetchAndDisplayPets: async function() {
+  fetchAndDisplayPets: async function () {
     const blockchainPets = await App.fetchPetsFromBlockchain();
     const jsonPets = await App.fetchPetsFromJSON();
 
     // Combine and render pets data
-    App.pets = {...jsonPets, ...blockchainPets}; // Adjust this merge logic based on your data structure
+    App.pets = { ...jsonPets, ...blockchainPets };
     App.renderPets();
   },
 
-  fetchPetsFromBlockchain: async function() {
+  fetchPetsFromBlockchain: async function () {
     // Fetch pets from the blockchain
     var adoptionInstance;
 
@@ -79,7 +80,7 @@ App = {
       const petIds = await adoptionInstance.getPetIds();
       console.log(petIds, "petIds")
       for (let i = 0; i < petIds.length; i++) {
-        
+
         const petId = petIds[i]["c"][0];
         console.log(petId[i], "petId")
         const petData = await adoptionInstance.getPet(petId);
@@ -99,20 +100,23 @@ App = {
     return pets;
   },
 
-  fetchPetsFromJSON: function() {
+  fetchPetsFromJSON: function () {
     return new Promise((resolve, reject) => {
-      $.getJSON('../pets.json', function(data) {
+      $.getJSON('../pets.json', function (data) {
         resolve(data);
       }).fail(reject);
     });
   },
 
-  renderPets: function() {
+  renderPets: function (filteredPets = Object.values(App.pets)) {
     var petsRow = $('#petsRow');
     var petTemplate = $('#petTemplate');
 
-    for (let id in App.pets) {
-      let pet = App.pets[id];
+    // Clear all petTemplate first
+    petsRow.empty();
+
+    for (let id in filteredPets) {
+      let pet = filteredPets[id];
       petTemplate.find('.panel-title').text(pet.name);
       petTemplate.find('img').attr('src', pet.picture);
       petTemplate.find('.pet-breed').text(pet.breed);
@@ -120,9 +124,9 @@ App = {
       petTemplate.find('.pet-location').text(pet.location);
       petTemplate.find('.btn-adopt').attr('data-id', pet.id);
       petTemplate.find('.btn-unadopt').attr('data-id', pet.id);
-
       petsRow.append(petTemplate.html());
     }
+
   },
 
   markAdopted: function (adopters, account) {
@@ -242,7 +246,6 @@ App = {
     var petLocation = $('#petLocation').val();
     var petPhoto = 'images/' + $('#petPhoto').val().split('\\').pop();
     console.log(petPhoto, "petPhoto")
-    // console log the type of these values to make sure they are correct
     console.log(typeof petName, typeof petBreed, typeof petAge, typeof petLocation, typeof petPhoto, "petName, petBreed, petAge, petLocation, petPhoto")
 
 
@@ -268,11 +271,28 @@ App = {
       });
     });
 
+  },
+
+  handleMostAdoptedBreed: function () {
+    // Filter pets by most adopted breed
+    var mostAdoptedBreed;
+    var adoptionInstance;
+    App.contracts.Adoption.deployed().then(function (instance) {
+      adoptionInstance = instance;
+      return adoptionInstance.getMostAdoptedBreed();
+    }).then(function (result) {
+      mostAdoptedBreed = result;
+      const filteredPets = Object.values(App.pets).filter(pet => pet.breed === mostAdoptedBreed);
+      console.log(filteredPets, "filteredPets")
+      App.renderPets(filteredPets);
+    }).catch(function (err) {
+      console.log(err.message);
+    });
   }
 };
 
-$(function() {
-  $(window).on('load', function() {
+$(function () {
+  $(window).on('load', function () {
     App.init();
-});
+  });
 });
