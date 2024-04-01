@@ -12,6 +12,8 @@ App = {
 
       // After ensuring the contract is initialized, fetch and display pets
       await App.fetchAndDisplayPets();
+      await App.renderPets();
+
     } catch (error) {
       console.error("Could not initialize the app:", error);
     }
@@ -46,7 +48,7 @@ App = {
       App.contracts.Adoption.setProvider(App.web3Provider);
 
       // Await for the contract to be initialized here, if necessary
-      await App.markAdopted(); // Make sure this function properly handles async operations
+      App.markAdopted(); // Make sure this function properly handles async operations
     } catch (error) {
       console.error("Failed to fetch Adoption.json", error);
       throw new Error("Failed to initialize the contract.");
@@ -67,7 +69,8 @@ App = {
 
     // Combine and render pets data
     App.pets = { ...jsonPets, ...blockchainPets };
-    App.renderPets();
+    console.log(App.pets, "App.pets after combining pets data")
+    
   },
 
   fetchPetsFromBlockchain: async function () {
@@ -82,12 +85,13 @@ App = {
       for (let i = 0; i < petIds.length; i++) {
 
         const petId = petIds[i]["c"][0];
-        console.log(petId[i], "petId")
+        console.log(petId, "petId")
         const petData = await adoptionInstance.getPet(petId);
         pets[petId] = {
+          id: petId,
           name: petData[0],
           breed: petData[1],
-          age: petData[2],
+          age: petData[2]["c"][0],
           location: petData[3],
           picture: petData[4],
           owner: petData[5]
@@ -126,30 +130,34 @@ App = {
       petTemplate.find('.btn-unadopt').attr('data-id', pet.id);
       petsRow.append(petTemplate.html());
     }
+    App.markAdopted();
 
   },
 
   markAdopted: function (adopters, account) {
-    var adoptionInstance;
-
-    App.contracts.Adoption.deployed().then(function (instance) {
-      adoptionInstance = instance;
-
-      return adoptionInstance.getAdopters.call();
-    }).then(function (adopters) {
-      console.log(adopters)
-
-      for (i = 0; i < adopters.length; i++) {
-        if (adopters[i] !== '0x0000000000000000000000000000000000000000') {
+    // App.fetchAndDisplayPets
+    web3.eth.getAccounts(function (error, accounts) {
+      if (error) {
+        console.log(error);
+      }
+      var account = accounts[0];
+      console.log(App.pets, "App.pets_143")
+      // App.fetchAndDisplayPets();
+      for (let i = 0; i < Object.values(App.pets).length; i++) {
+        console.log(App.pets[i], "App.pets[i]")
+        if (!App.pets[i].owner || App.pets[i].owner === '0x0000000000000000000000000000000000000000') {
+          $('.panel-pet').eq(i).find('.btn-adopt').text('Adopt').removeAttr('disabled');
+          $('.panel-pet').eq(i).find('.btn-unadopt').text('Return').attr('disabled', true);
+        } else if (App.pets[i].owner === account) {
           $('.panel-pet').eq(i).find('.btn-adopt').text('Adopt').attr('disabled', true);
           $('.panel-pet').eq(i).find('.btn-unadopt').text('Return').removeAttr('disabled');
-
+        } else {
+          $('.panel-pet').eq(i).find('.btn-adopt').text('Adopt').attr('disabled', true);
+          $('.panel-pet').eq(i).find('.btn-unadopt').text('Return').attr('disabled', true);
         }
       }
-
-    }).catch(function (err) {
-      console.log(err.message);
     });
+
   },
 
   markUnadopted: function (adopters, account) {
@@ -160,7 +168,7 @@ App = {
 
       return adoptionInstance.getAdopters.call();
     }).then(function (adopters) {
-      console.log(adopters)
+      // console.log(adopters)
       for (i = 0; i < adopters.length; i++) {
         if (adopters[i] == '0x0000000000000000000000000000000000000000') {
           $('.panel-pet').eq(i).find('.btn-adopt').text('Adopt').removeAttr('disabled');
@@ -188,11 +196,22 @@ App = {
 
       App.contracts.Adoption.deployed().then(function (instance) {
         adoptionInstance = instance;
-
+        console.log(petId, "petId")
+        console.log(typeof petId, "typeof petId")
+        // App.pet[petId].owner = account;
         // Execute adopt as a transaction by sending account
-        // return adoptionInstance.adopt(petId, { from: account });
-        return adoptionInstance.adopt(petId, App.pets[petId].name, App.pets[petId].breed, App.pets[petId].age, App.pets[petId].location, App.pets[petId].picture, { from: account });
+        App.pets[petId].owner = account;
+
+        console.log(adoptionInstance, "adoptionInstance");
+        return adoptionInstance.adopt(petId,
+          App.pets[petId].name,
+          App.pets[petId].breed,
+          App.pets[petId].age,
+          App.pets[petId].location,
+          App.pets[petId].picture,
+          { from: account });
       }).then(function (result) {
+        
         return App.markAdopted();
       }).catch(function (err) {
         console.log(err.message);
@@ -222,8 +241,12 @@ App = {
           return unadoptInstance.unadopt(petId, { from: account });
         })
         .then(function (result) {
-          console.log("fail at markunadopted.")
-          return App.markUnadopted();
+          // console.log(petId, "petId9999")
+          // console.log(App.pet, "App.pet[petId]")
+          // App.pet[petId].owner = '0x0000000000000000000000000000000000000000';
+          // App.fetchAndDisplayPets();
+          App.markAdopted();
+          return location.reload();
         })
         .catch(function (err) {
           console.log(err.message);
@@ -266,6 +289,7 @@ App = {
         console.log(App.pets, "App.pets after adding new pet")
       }).then(function (result) {
         console.log('Pet registered successfully', result);
+        return App.fetchAndDisplayPets();
       }).catch(function (error) {
         console.log(error.message);
       });

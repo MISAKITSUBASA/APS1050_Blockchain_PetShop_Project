@@ -141,4 +141,21 @@ contract Adoption {
         return pets[petIds[maxIndex]].breed;
     }
 
+    // function to return all pets's id that the user can adopt and the pets they arleady adopted in a dictionary format   
+    function getAdoptablePets(address user) public view returns (uint[] memory, uint[] memory) {
+        uint[] memory adoptablePets = new uint[](petIds.length);
+        uint[] memory adoptedPets = new uint[](petIds.length);
+        uint adoptableIndex = 0;
+        uint adoptedIndex = 0;
+        for (uint i = 0; i < petIds.length; i++) {
+            if (pets[petIds[i]].owner == address(0)) {
+                adoptablePets[adoptableIndex] = petIds[i];
+                adoptableIndex++;
+            } else if (pets[petIds[i]].owner == user) {
+                adoptedPets[adoptedIndex] = petIds[i];
+                adoptedIndex++;
+            }
+        }
+        return (adoptablePets, adoptedPets);
+    }
 }
