@@ -61,6 +61,9 @@ App = {
     $(document).on('click', '.btn-unadopt', App.handleUnadopt);
     $(document).on('submit', '#petRegistrationForm', App.handleRegisterPet);
     $(document).on('click', '.btn-mostAdoptedBreed', App.handleMostAdoptedBreed);
+    $(document).on('change', '.breedSelector', App.handleFilter);
+    $(document).on('change', '.ageRange', App.handleFilter);
+    $(document).on('change', '.locationSelector', App.handleFilter);
   },
 
   fetchAndDisplayPets: async function () {
@@ -113,6 +116,39 @@ App = {
   },
 
   renderPets: function (filteredPets = Object.values(App.pets)) {
+
+    // Load locations into the location selector
+    var locationSelectorVal = $('.locationSelector').val();
+    var locationSelector = $('.locationSelector'); 
+    var locations = new Set();
+
+    Object.values(App.pets).forEach(pet => locations.add(pet.location));
+    // console.log(locations, "locations")
+    locationSelector.empty();
+    locationSelector.append($("<option></option>").attr("value", "All").text("All"));
+    
+    locations.forEach(location => {
+      // console.log(location, "location")
+      var option = $("<option></option>").attr("value", location).text(location);
+      locationSelector.append(option);
+    });
+    locationSelector.val(locationSelectorVal);
+
+    // Load breeds into the breed selector
+    var breedSelectorVal = $('.breedSelector').val();
+    var breedSelector = $('.breedSelector');
+    var breeds = new Set();
+
+    Object.values(App.pets).forEach(pet => breeds.add(pet.breed));
+    breedSelector.empty();
+    breedSelector.append($("<option></option>").attr("value", "All").text("All"));
+    breedSelector.val("All");
+    breeds.forEach(breed => {
+      var option = $("<option></option>").attr("value", breed).text(breed);
+      breedSelector.append(option);
+    });
+    breedSelector.val(breedSelectorVal);
+    // Render pets to the UI
     var petsRow = $('#petsRow');
     var petTemplate = $('#petTemplate');
 
@@ -312,7 +348,35 @@ App = {
     }).catch(function (err) {
       console.log(err.message);
     });
+  },
+
+  handleFilter: function () {
+    // Filter pets by breed, age, and location
+    const breed = $('.breedSelector').val();
+    const age = $('.ageRange').val();
+    const location = $('.locationSelector').val();
+    let filteredPets = Object.values(App.pets);
+
+    if (breed !== 'All') {
+      filteredPets = filteredPets.filter(pet => pet.breed === breed);
+    }
+    if (location !== 'All') {
+      filteredPets = filteredPets.filter(pet => pet.location === location);
+    }
+    if (age !== 'All') {
+      if (age === '0-1') {
+        filteredPets = filteredPets.filter(pet => pet.age <= 1);
+      }else if (age === '1-3') {
+        filteredPets = filteredPets.filter(pet => pet.age > 1 && pet.age <= 3);
+      }else if (age === '3-5') {
+      filteredPets = filteredPets.filter(pet => pet.age > 3 && pet.age <= 5);
+      }else if (age === '5+') {
+        filteredPets = filteredPets.filter(pet => pet.age > 5);
+      }
+    }
+    App.renderPets(filteredPets);
   }
+  
 };
 
 $(function () {

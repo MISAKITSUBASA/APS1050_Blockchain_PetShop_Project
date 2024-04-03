@@ -30,12 +30,30 @@
       <div class="container">
         <!-- Existing content -->
         <a href="register.html" class="btn btn-info">Register a New Pet</a>
-      </div>
-      
-      <div class="container">
         <button class="btn-mostAdoptedBreed">View Most Adopted Breed</button>
       </div>
 
+
+      <div class="container">
+        <label for="breedSelector">Filter by Breed:</label>
+        <select class="form-control breedSelector">
+          <option>All</option>
+        </select>
+        <label for="ageRange">Filter by Age Range:</label>
+        <select class="form-control ageRange">
+          <option>All</option>
+          <option value="0-1">0-1 years</option>
+          <option value="1-3">1-3 years</option>
+          <option value="3-5">3-5 years</option>
+          <option value="5+">5+ years</option>
+        </select>
+        <label for="locationSelector">Filter by Location:</label>
+        <select class="form-control locationSelector">
+        <option>All</option>
+        </select>
+      </div>
+
+    </div>
       <div id="petsRow" class="row">
         <!-- PETS LOAD HERE -->
       </div>
