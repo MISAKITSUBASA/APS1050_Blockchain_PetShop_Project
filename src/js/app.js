@@ -144,7 +144,7 @@ App = {
       console.log(App.pets, "App.pets_143")
       // App.fetchAndDisplayPets();
       for (let i = 0; i < Object.values(App.pets).length; i++) {
-        console.log(App.pets[i], "App.pets[i]")
+        // console.log(App.pets[i], "App.pets[i]")
         if (!App.pets[i].owner || App.pets[i].owner === '0x0000000000000000000000000000000000000000') {
           $('.panel-pet').eq(i).find('.btn-adopt').text('Adopt').removeAttr('disabled');
           $('.panel-pet').eq(i).find('.btn-unadopt').text('Return').attr('disabled', true);
