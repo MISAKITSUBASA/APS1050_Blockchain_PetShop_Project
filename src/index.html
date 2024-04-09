@@ -5,11 +5,45 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
-    <title>Pete's Pet Shop</title>
+    <title>TC's Pet Shop</title>
 
     <!-- Bootstrap -->
     <link href="css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+    <style>
+        body {
+            font-family: 'San Francisco', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            color: #333;
+            background-color: #f2f2f2;
+        }
+        .container {
+            max-width: 600px;
+        }
+        .form-group {
+            margin-bottom: 1em;
+        }
+        .form-control {
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        .btn-primary {
+            background-color: #0070c9;
+            border: none;
+        }
+        .btn-primary:hover {
+            background-color: #005999;
+        }
+        .nav {
+            display: flex;
+            justify-content: center;
+          }
 
+        li {
+          display: inline;
+          padding: 10px;
+          font: 2em sans-serif;
+        }
+    </style>
     <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
     <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
     <!--[if lt IE 9]>
@@ -18,23 +52,41 @@
     <![endif]-->
   </head>
   <body>
-    <div class="container">
       <div class="row">
         <div class="col-xs-12 col-sm-8 col-sm-push-2">
-            <h1 class="text-center"><a href="/" style="text-decoration: none; color: inherit;">Pete's Pet Shop</a></h1>
+            <h1 class="text-center my-4" style="font-size: 5em;"><a href="/" style="text-decoration: none; color: inherit;">TC's Pet Shop</a></h1>
           <hr/>
           <br/>
         </div>
       </div>
 
-      <div class="container">
+        <ul class="nav">
+
+          <style>
+            .custom-link {
+              color: #333; /* Replace with your desired color */
+            }
+          </style>
+
+          <li><a href="donation.html" class="custom-link">Donate to Petshop</a></li>
+          <li><a href="register.html" class="custom-link">Register a New Pet</a></li>
+          <li><a href="#" class="btn-mostAdoptedBreed custom-link">View Most Adopted Breed</a></li>
+          
+        </ul>
         <!-- Existing content -->
-        <a href="register.html" class="btn btn-info">Register a New Pet</a>
-        <button class="btn-mostAdoptedBreed">View Most Adopted Breed</button>
-      </div>
+        
 
 
-      <div class="container">
+      <style>
+        .container {
+          max-width: 50%; /* Adjust this value to your preference */
+          font: 1.5em sans-serif;
+        }
+        /* option {
+          font: 2em sans-serif;
+        } */
+      </style>
+      <div class="container" style="padding: 1.5em;">
         <label for="breedSelector">Filter by Breed:</label>
         <select class="form-control breedSelector">
           <option>All</option>
@@ -52,8 +104,8 @@
         <option>All</option>
         </select>
       </div>
-
-    </div>
+    
+    </div class='container'>
       <div id="petsRow" class="row">
         <!-- PETS LOAD HERE -->
       </div>
@@ -76,6 +128,7 @@
           </div>
         </div>
       </div>
+    </div>
     </div>
 
     <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->

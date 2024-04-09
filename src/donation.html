@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Donate Ether to TC's PetShop</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+    <style>
+        body {
+            font-family: 'San Francisco', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            color: #333;
+            background-color: #f2f2f2;
+        }
+        .container {
+            max-width: 600px;
+        }
+        .form-group {
+            margin-bottom: 1em;
+        }
+        .form-control {
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        .btn-primary {
+            background-color: #0070c9;
+            border: none;
+        }
+        .btn-primary:hover {
+            background-color: #005999;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="text-center my-4">Donate Ether to TC's PetShop</h1>
+        <p>Thank you for considering a donation to PetShop. Your donation will help us continue to provide care and shelter for animals in need.</p>
+        <p>Enter the amount you would like to donate below and click the "Donate" button.</p>
+        <p class="text-center">Your account balance is: </p>
+        <p id="accountBalance" class="text-center"></p>
+        <form onSubmit="Donate.handleDonation(); return false;">
+            <div class="form-group">
+                <label for="donationAmount">Donation Amount (in Ether Minimum):</label>
+                <input type="number" id="donationAmount" name="donationAmount" min="0.1" step="0.1" value="0.1" class="form-control">
+            </div>
+            <div class="form-group">
+                <label for="donationMessage">Donation Message:</label>
+                <textarea id="donationMessage" name="donationMessage" class="form-control"></textarea>        
+            </div>
+            <button class="btn btn-primary btn-block" type="submit"> Donate </button>
+        </form>
+        <button class="btn btn-secondary mt-3" onclick="window.location.href='index.html';">Back to Homepage</button>
+        
+
+        <div id="donationList" class="mt-4">
+            <h2>Donations Received</h2>
+            <table id="donationMessages" class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Donor</th>
+                        <th>Amount</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Donation rows will be inserted here -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+    <!-- Include all compiled plugins (below), or include individual files as needed -->
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+    <script src="js/web3.min.js"></script>
+    <script src="js/truffle-contract.js"></script>
+    <script src="js/donate.js"></script>
+
+</body>
+</html>

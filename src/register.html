@@ -3,12 +3,36 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Register Pet - Pete's Pet Shop</title>
-    <link href="css/bootstrap.min.css" rel="stylesheet">
+    <title>Register Pet - TC's Pet Shop</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+    <style>
+        body {
+            font-family: 'San Francisco', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            color: #333;
+            background-color: #f2f2f2;
+        }
+        .container {
+            max-width: 600px;
+        }
+        .form-group {
+            margin-bottom: 1em;
+        }
+        .form-control {
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        .btn-primary {
+            background-color: #0070c9;
+            border: none;
+        }
+        .btn-primary:hover {
+            background-color: #005999;
+        }
+    </style>
 </head>
 <body>
     <div class="container">
-        <h1>Register a New Pet for Adoption</h1>
+        <h1 class="text-center my-4">Register a New Pet</h1>
         <form id="petRegistrationForm">
             <div class="form-group">
                 <label for="petName">Name</label>
@@ -30,10 +54,10 @@
                 <label for="petPhoto">Photo</label>
                 <input type="file" class="form-control" id="petPhoto" accept="image/*" required>
             </div>
-            <button type="submit" class="btn btn-primary">Register Pet</button>
+            <button type="submit" class="btn btn-primary btn-block">Register Pet</button>
         </form>
         <hr>
-        <a href="index.html" class="btn btn-secondary">Return to Home Page</a>
+        <a href="index.html" class="btn btn-secondary mt-3">Return to Home Page</a>
     </div>
 
     <!-- Include jQuery and Bootstrap -->
