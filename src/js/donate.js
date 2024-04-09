@@ -133,6 +133,7 @@ var Donate = {
             });
         }
         );
+        Donate.page();
     }
 
 };
