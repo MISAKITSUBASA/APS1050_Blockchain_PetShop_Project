@@ -44,6 +44,7 @@ var Donate = {
             var DonationArtifact = data;
             Donate.contracts.Donation = TruffleContract(DonationArtifact);
             Donate.contracts.Donation.setProvider(Donate.web3Provider);
+            console.log("Contracts initialized...");
         } catch (error) {
             console.log("Error initializing contracts: ", error);
             throw new Error("Error initializing contracts: ", error);
@@ -89,6 +90,7 @@ var Donate = {
                 const messages = donationsHistory[2].map(hexMessage => web3.toAscii(hexMessage));
                 console.log(messages);
                 console.log(result);
+                $("#donationMessages tbody").empty();
                 // render the donations
                 for (let i = 0; i < result[0].length; i++) {
                     let donor = result[0][i];
@@ -124,16 +126,18 @@ var Donate = {
                 var donationMessage = $("#donationMessage").val();
                 console.log(donationAmount, donationMessage);
 
-                return donationInstance.donate(donationMessage, {from: Donate.account, value: web3.toWei(donationAmount, "ether")});
+                return donationInstance.donate("", {from: Donate.account, value: web3.toWei(donationAmount, "ether")});
             }).then(function(result) {
+                
                 console.log(result);
+                Donate.page();
                 alert("Donation successful!");
             }).catch(function(err) {
                 console.log(err.message);
             });
         }
         );
-        Donate.page();
+        
     }
 
 };
