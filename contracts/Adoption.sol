@@ -3,6 +3,8 @@ pragma solidity ^0.5.0;
 contract Adoption {
     // Define an array of 16 addresses to store adopters
     address[16] public adopters;
+    // Maps user addresses to an array of adopted pet IDs
+    mapping(address => uint[]) private userAdoptionHistory;
 
     // Define a struct to hold pet information
     struct Pet {
@@ -32,6 +34,7 @@ contract Adoption {
         adopters[petId] = msg.sender;
 
         pets[petId] = Pet(name, breed, age, location, photo, msg.sender);
+        userAdoptionHistory[msg.sender].push(petId);  // Append pet to the user's adoption history
 
         // Check if petId exists in petIds, if not then add it
         bool exists = false;
@@ -157,5 +160,10 @@ contract Adoption {
             }
         }
         return (adoptablePets, adoptedPets);
+    }
+
+    // Function to get a user's adoption history
+    function getAdoptionHistory(address user) public view returns (uint[] memory) {
+        return userAdoptionHistory[user];
     }
 }

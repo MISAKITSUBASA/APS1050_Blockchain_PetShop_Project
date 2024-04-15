@@ -64,6 +64,7 @@ App = {
     $(document).on('change', '.breedSelector', App.handleFilter);
     $(document).on('change', '.ageRange', App.handleFilter);
     $(document).on('change', '.locationSelector', App.handleFilter);
+    $(document).on('click', '.btn-userAdoptionHistory', App.handleAdoptionHistory);
   },
 
   fetchAndDisplayPets: async function () {
@@ -181,12 +182,14 @@ App = {
       // App.fetchAndDisplayPets();
       for (let i = 0; i < Object.values(App.pets).length; i++) {
         // console.log(App.pets[i], "App.pets[i]")
+        var petPanel = $('.panel-pet').find(`.btn-adopt[data-id='${i}']`).closest('.panel-pet');
         if (!App.pets[i].owner || App.pets[i].owner === '0x0000000000000000000000000000000000000000') {
           $('.panel-pet').eq(i).find('.btn-adopt').text('Adopt').removeAttr('disabled');
           $('.panel-pet').eq(i).find('.btn-unadopt').text('Return').attr('disabled', true);
         } else if (App.pets[i].owner === account) {
-          $('.panel-pet').eq(i).find('.btn-adopt').text('Adopt').attr('disabled', true);
-          $('.panel-pet').eq(i).find('.btn-unadopt').text('Return').removeAttr('disabled');
+          console.log(`Processing pet ID: ${i}, Owner: ${App.pets[i].owner}`);
+          petPanel.find('.btn-adopt').text('Adopt').attr('disabled', true);
+          petPanel.find('.btn-unadopt').text('Return').removeAttr('disabled');
         } else {
           $('.panel-pet').eq(i).find('.btn-adopt').text('Adopt').attr('disabled', true);
           $('.panel-pet').eq(i).find('.btn-unadopt').text('Return').attr('disabled', true);
@@ -375,8 +378,45 @@ App = {
       }
     }
     App.renderPets(filteredPets);
+  },
+
+  handleAdoptionHistory: function() {
+    web3.eth.getAccounts(function(error, accounts) {
+      if (error) {
+        console.error("Error retrieving accounts:", error);
+        return;
+      }
+
+      if (accounts.length === 0) {
+        console.error("No accounts available.");
+        return;
+      }
+
+      var account = accounts[0];
+      console.log("Account:", account);
+
+      App.contracts.Adoption.deployed().then(function(instance) {
+        adoptionInstance = instance;
+        return adoptionInstance.getAdoptionHistory(account, { from: account });
+      }).then(function(result) {
+        if (result.length === 0) {
+          console.log("No pets owned by this address.");
+        } else {
+          const resultFiltered = [];
+          for (let i = 0; i < result.length; i++) {
+            resultFiltered.push(Number(result[i]["c"][0]));
+          }
+          const resultUnique = Array.from(new Set(resultFiltered));
+          console.log("Pets owned by the user in the past: ", resultUnique);;
+          const filteredPets = Object.values(App.pets).filter(pet => resultUnique.includes(pet.id));
+          console.log("Filtered pets:", filteredPets);
+          App.renderPets(filteredPets);
+        }
+      }).catch(function(err) {
+        console.error("Failed to fetch pets by owner:", err);
+      });
+    });
   }
-  
 };
 
 $(function () {
