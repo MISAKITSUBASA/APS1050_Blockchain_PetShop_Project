@@ -13,4 +13,5 @@ To run the DApp, excute:
 1.	`truffle compile`
 2.	`truffle migrate --reset`
 3.	`npm run dev`
+   
 [Report](TC's Pet Shop - Project Summary.docx)
