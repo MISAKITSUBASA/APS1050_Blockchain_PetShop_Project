@@ -15,4 +15,4 @@ To run the DApp, excute:
 3.	`npm run dev`
    
 ## Report
-[Report](TC's Pet Shop - Project Summary.docx)
+[Report]([TC's Pet Shop - Project Summary.docx](https://github.com/MISAKITSUBASA/APS1050_Blockchain_PetShop_Project/blob/a76d84c9378fa77fe60d75a94089b4adf498f333/TC's%20Pet%20Shop%20-%20Project%20Summary.docx))
